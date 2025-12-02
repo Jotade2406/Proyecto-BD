@@ -3,6 +3,7 @@
 -- Jorge Baglivo
 -- Bralin Canllavi
 -- Juan Diego Salazar
+-- Esta base de datos fue creada e implementada en data grip
 -- =======================================================================================
 
 DROP DATABASE IF EXISTS GuarderiaDB;
