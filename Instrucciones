@@ -1,0 +1,48 @@
+Integrantes:
+- Jorge Baglivo 
+- Bralin Canllavi
+- Juan Diego Salazar
+
+
+ Instrucciones de Instalación: Mi Pequeño Mundo
+Sigue estos 3 pasos exactos para levantar el proyecto en tu computadora.
+
+1. Base de Datos (MySQL)
+Abre tu gestor de base de datos (DataGrip de preferencia).
+
+Abre un nuevo archivo de consulta (Query Console).
+
+Copia el contenido del archivo y pégalo.
+
+Ejecuta todo el script para que se cree la BD .
+
+2. Visual Studio (C#)
+Abre Visual Studio y crea un Nuevo Proyecto.
+
+Busca y selecciona: Aplicación de Windows Forms (.NET Framework).
+
+IMPORTANTE: Nombra el proyecto exactamente: GuarderiaVisual (si le pones otro nombre, dará error).
+
+Ve a Herramientas > Administrador de paquetes NuGet > Administrar paquetes para la solución.
+
+Busca e instala: MySql.Data (versión 8.x o la más estable).
+
+3. Copiar Código
+En el explorador de soluciones (derecha), busca Program.cs. Borra todo su código y pega el que está en este repositorio.
+
+Busca Form1.cs (clic derecho -> Ver Código). Borra todo y pega el código completo del repositorio.
+
+(Opcional, en este caso pusimos de usuario Root y la contraseña 123456) Si tu contraseña de MySQL no es 123456, busca en Form1.cs la línea private string connStr y cámbiala.
+
+4. Archivos Extra (Imágenes)
+Para que funcione la pantalla de carga y el QR:
+
+Ve a la carpeta de tu proyecto: GuarderiaVisual/bin/Debug.
+
+Pega ahí dos imágenes:
+
+fondo.jpg (Para la pantalla de carga).
+
+qr.png (Una imagen cuadrada de un código QR).
+
+¡Listo! Dale al botón Iniciar ▶️.
