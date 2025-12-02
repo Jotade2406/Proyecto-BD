@@ -1,0 +1,290 @@
+-- =======================================================================================
+-- Base de Datos de proyecto final
+-- Jorge Baglivo
+-- Bralin Canllavi
+-- Juan Diego Salazar
+-- =======================================================================================
+
+DROP DATABASE IF EXISTS GuarderiaDB;
+CREATE DATABASE GuarderiaDB;
+USE GuarderiaDB;
+
+-- ==========================================================
+-- 1. TABLAS MAESTRAS
+-- ==========================================================
+
+-- Personas (Padres, Tutores, Pagadores)
+CREATE TABLE PERSONA (
+    CI VARCHAR(20) PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Direccion VARCHAR(255) NOT NULL,
+    Telefono VARCHAR(20) NOT NULL,
+    NumCuentaCorriente VARCHAR(50) NULL
+);
+
+-- Ingredientes
+CREATE TABLE INGREDIENTE (
+    NombreIngrediente VARCHAR(100) PRIMARY KEY
+);
+
+-- Menús de Comida
+CREATE TABLE MENU (
+    NumMenu INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100),
+    CostoBaseComida DECIMAL(10, 2)
+);
+
+-- Productos de Tienda
+CREATE TABLE PRODUCTO (
+    IdProducto INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    StockActual INT NOT NULL DEFAULT 0,
+    StockMinimo INT NOT NULL DEFAULT 10,
+    PrecioUnitario DECIMAL(10, 2) NOT NULL
+);
+
+-- Servicios Adicionales
+CREATE TABLE SERVICIO (
+    IdServicio INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    CostoBase DECIMAL(10, 2) NOT NULL,
+    Categoria VARCHAR(50) DEFAULT 'GENERAL'
+);
+
+-- Profesionales / Especialistas
+CREATE TABLE ESPECIALISTA (
+    IdEspecialista INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Especialidad VARCHAR(100) NOT NULL,
+    Categoria VARCHAR(50) DEFAULT 'GENERAL' -- Para filtrar en la App
+);
+
+-- ==========================================================
+-- 2. TABLAS PRINCIPALES Y RELACIONES
+-- ==========================================================
+
+-- Usuarios del Sistema (por mejorar)
+CREATE TABLE USUARIO (
+    IdUsuario INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(50) UNIQUE NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Rol ENUM('ADMIN', 'PADRE') NOT NULL,
+    CI_Persona VARCHAR(20) NULL,
+    FOREIGN KEY (CI_Persona) REFERENCES PERSONA(CI) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Niños
+CREATE TABLE NINO (
+    Matricula INT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    FechaNacimiento DATE NOT NULL,
+    FechaIngreso DATE NOT NULL,
+    FechaBaja DATE NULL,
+    CostoFijoMensual DECIMAL(10, 2) NOT NULL,
+    CIPagador VARCHAR(20) NOT NULL,
+    -- Configurado con CASCADE para permitir borrado de Tutores
+    FOREIGN KEY (CIPagador) REFERENCES PERSONA(CI) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+-- Relación: Ingredientes por Menú (Esto va de la mano practicamente con las alergias)
+CREATE TABLE MENU_INGREDIENTE (
+    NumMenu INT,
+    Nombre_Ingrediente VARCHAR(100),
+    PRIMARY KEY (NumMenu, Nombre_Ingrediente),
+    FOREIGN KEY (NumMenu) REFERENCES MENU(NumMenu) ON DELETE CASCADE,
+    FOREIGN KEY (Nombre_Ingrediente) REFERENCES INGREDIENTE(NombreIngrediente) ON DELETE CASCADE
+);
+
+-- Relación: Alergias de los niños
+CREATE TABLE ALERGIA (
+    Matricula_Niño INT,
+    Nombre_Ingrediente VARCHAR(100),
+    PRIMARY KEY (Matricula_Niño, Nombre_Ingrediente),
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE,
+    FOREIGN KEY (Nombre_Ingrediente) REFERENCES INGREDIENTE(NombreIngrediente) ON DELETE CASCADE
+);
+
+-- Relación: Autorizados para recoger
+CREATE TABLE AUTORIZACION_RECOGIDA (
+    CI_Autorizado VARCHAR(20),
+    Matricula_Niño INT,
+    Relacion VARCHAR(50),
+    PRIMARY KEY (CI_Autorizado, Matricula_Niño),
+    FOREIGN KEY (CI_Autorizado) REFERENCES PERSONA(CI) ON DELETE CASCADE,
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE
+);
+
+-- ==========================================================
+-- 3. TABLAS TRANSACCIONALES O HISTORIAL DE OPERACIONES
+-- ==========================================================
+
+-- Consumo Diario de Comida
+CREATE TABLE CONSUMO_DIARIO (
+    IdConsumo INT AUTO_INCREMENT PRIMARY KEY,
+    Matricula_Niño INT NOT NULL,
+    Fecha DATE NOT NULL,
+    NumMenu_Consumido INT NOT NULL,
+    Estado ENUM('PENDIENTE', 'PAGADO') DEFAULT 'PENDIENTE',
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE,
+    FOREIGN KEY (NumMenu_Consumido) REFERENCES MENU(NumMenu)
+);
+
+-- Consumo de Servicios Extra
+CREATE TABLE CONSUMO_SERVICIO (
+    IdConsumoServicio INT AUTO_INCREMENT PRIMARY KEY,
+    Matricula_Niño INT NOT NULL,
+    IdServicio INT NOT NULL,
+    IdEspecialista INT NULL,
+    Fecha DATE DEFAULT (CURRENT_DATE),
+    Observacion VARCHAR(200) NULL,
+    CostoAplicado DECIMAL(10, 2) NOT NULL,
+    Estado ENUM('PENDIENTE', 'PAGADO') DEFAULT 'PENDIENTE',
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE,
+    FOREIGN KEY (IdServicio) REFERENCES SERVICIO(IdServicio),
+    FOREIGN KEY (IdEspecialista) REFERENCES ESPECIALISTA(IdEspecialista)
+);
+
+-- Consumo de Tienda
+CREATE TABLE CONSUMO_TIENDA (
+    IdConsumoTienda INT AUTO_INCREMENT PRIMARY KEY,
+    Matricula_Niño INT NOT NULL,
+    IdProducto INT NOT NULL,
+    Fecha DATE DEFAULT (CURRENT_DATE),
+    CostoAplicado DECIMAL(10, 2) NOT NULL,
+    Estado ENUM('PENDIENTE', 'PAGADO') DEFAULT 'PENDIENTE',
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE,
+    FOREIGN KEY (IdProducto) REFERENCES PRODUCTO(IdProducto)
+);
+
+-- Historial de Pagos / Facturación
+CREATE TABLE PAGO (
+    IdPago INT AUTO_INCREMENT PRIMARY KEY,
+    Matricula_Niño INT NOT NULL,
+    Mes INT NOT NULL,
+    Anio INT NOT NULL,
+    FechaPago DATE DEFAULT (CURRENT_DATE),
+    MontoMensualidad DECIMAL(10, 2) NOT NULL,
+    MontoComedor DECIMAL(10, 2) NOT NULL,
+    TotalPagar DECIMAL(10, 2) NOT NULL, -- Suma total de todo
+    Observaciones VARCHAR(255) NULL,
+    FOREIGN KEY (Matricula_Niño) REFERENCES NINO(Matricula) ON DELETE CASCADE
+);
+
+-- ==========================================================
+-- 4. VISTAS
+-- ==========================================================
+
+-- Vista para calcular la Nómina de Especialistas
+CREATE OR REPLACE VIEW V_REPORTE_NOMINA AS
+SELECT
+    e.IdEspecialista,
+    e.Nombre AS Especialista,
+    e.Especialidad,
+    MONTH(cs.Fecha) as Mes,
+    COUNT(*) as CantidadAtenciones,
+    SUM(cs.CostoAplicado) as TotalGenerado
+FROM CONSUMO_SERVICIO cs
+JOIN ESPECIALISTA e ON cs.IdEspecialista = e.IdEspecialista
+GROUP BY e.IdEspecialista, e.Nombre, e.Especialidad, MONTH(cs.Fecha);
+
+-- ==========================================================
+-- 5. PROCEDIMIENTOS ALMACENADOS
+-- ==========================================================
+
+-- SP para registrar pago total y limpiar deudas (Esto es del tema de las transacciones)
+DROP PROCEDURE IF EXISTS SP_REGISTRAR_PAGO;
+DELIMITER //
+CREATE PROCEDURE SP_REGISTRAR_PAGO(
+    IN p_Matricula INT,
+    IN p_Total DECIMAL(10,2)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+        -- 1. Insertar en Historial
+        INSERT INTO PAGO (Matricula_Niño, Mes, Anio, MontoMensualidad, MontoComedor, TotalPagar)
+        VALUES (p_Matricula, MONTH(NOW()), YEAR(NOW()), 0, 0, p_Total);
+
+        -- 2. Marcar TODO como PAGADO
+        UPDATE CONSUMO_DIARIO SET Estado='PAGADO' WHERE Matricula_Niño=p_Matricula AND Estado='PENDIENTE';
+        UPDATE CONSUMO_SERVICIO SET Estado='PAGADO' WHERE Matricula_Niño=p_Matricula AND Estado='PENDIENTE';
+        UPDATE CONSUMO_TIENDA SET Estado='PAGADO' WHERE Matricula_Niño=p_Matricula AND Estado='PENDIENTE';
+    COMMIT;
+END //
+DELIMITER ;
+
+-- SP con CURSOR para generar reporte de reposición
+DROP PROCEDURE IF EXISTS SP_GENERAR_PEDIDO_REPOSICION;
+DELIMITER //
+CREATE PROCEDURE SP_GENERAR_PEDIDO_REPOSICION()
+BEGIN
+    DECLARE fin INT DEFAULT 0;
+    DECLARE v_nombre VARCHAR(100);
+    DECLARE v_stock INT;
+    DECLARE v_minimo INT;
+    DECLARE v_faltante INT;
+
+    -- Cursor para recorrer productos
+    DECLARE cur_productos CURSOR FOR SELECT Nombre, StockActual, StockMinimo FROM PRODUCTO;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET fin = 1;
+
+    DROP TEMPORARY TABLE IF EXISTS REPORTE_COMPRA;
+    CREATE TEMPORARY TABLE REPORTE_COMPRA (Producto VARCHAR(100), Stock_Actual INT, Cantidad_A_Comprar INT);
+
+    OPEN cur_productos;
+    recorrer: LOOP
+        FETCH cur_productos INTO v_nombre, v_stock, v_minimo;
+        IF fin = 1 THEN LEAVE recorrer; END IF;
+
+        IF v_stock <= v_minimo THEN
+            SET v_faltante = (v_minimo * 2) - v_stock;
+            INSERT INTO REPORTE_COMPRA VALUES (v_nombre, v_stock, v_faltante);
+        END IF;
+    END LOOP recorrer;
+    CLOSE cur_productos;
+
+    SELECT * FROM REPORTE_COMPRA;
+END //
+DELIMITER ;
+
+-- ==============================================================
+-- 6. Estos solo son datos para rellenar, de ahi se ira probando
+-- ==============================================================
+
+-- Personas
+INSERT INTO PERSONA VALUES ('1234567A', 'Juan Pérez (Padre)', 'Av. Siempre Viva 123', '70012345', 'ES001');
+INSERT INTO USUARIO (Username, Password, Rol) VALUES ('admin', 'admin', 'ADMIN');
+
+-- Niños
+INSERT INTO NINO VALUES (101, 'Jorgenitalecitos', '2020-01-01', '2024-01-01', NULL, 300.00, '1234567A');
+
+-- Ingredientes
+INSERT INTO INGREDIENTE VALUES ('Maní'), ('Pollo'), ('Lácteos'), ('Gluten'), ('Huevo'), ('Piña');
+
+-- Menús
+INSERT INTO MENU (Nombre, CostoBaseComida) VALUES ('Sopa de Maní', 15.50), ('Pizza Hawaiana', 25.00);
+
+-- Relación Menú-Ingredientes
+INSERT INTO MENU_INGREDIENTE VALUES (1, 'Maní'), (1, 'Lácteos'); -- Sopa tiene Maní
+INSERT INTO MENU_INGREDIENTE VALUES (2, 'Gluten'), (2, 'Lácteos'), (2, 'Piña'); -- Pizza tiene Piña
+
+-- Alergias (Jorgenitalecitos es alérgico a la Piña)
+INSERT INTO ALERGIA VALUES (101, 'Piña');
+
+-- Servicios
+INSERT INTO SERVICIO (Nombre, CostoBase, Categoria) VALUES
+('Pediatría - Consulta', 100.00, 'SALUD'), ('Fonoaudiología', 80.00, 'SALUD'),
+('Lavandería', 15.00, 'GENERAL'), ('Psicomotricidad', 70.00, 'EDUCACION');
+
+-- Especialistas
+INSERT INTO ESPECIALISTA (Nombre, Especialidad, Categoria) VALUES
+('Dr. Gregory House', 'Pediatra', 'SALUD'), ('Lic. Ana Gómez', 'Fonoaudióloga', 'SALUD'),
+('Sra. Rosa', 'Servicios', 'GENERAL'), ('Prof. X', 'Psicomotricidad', 'EDUCACION');
+
+-- Tienda
+INSERT INTO PRODUCTO (Nombre, StockActual, StockMinimo, PrecioUnitario) VALUES
+('Pañales Huggies', 5, 10, 85.00), ('Leche Nido', 20, 5, 120.00);
