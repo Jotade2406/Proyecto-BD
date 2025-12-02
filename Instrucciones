@@ -37,7 +37,7 @@ Busca Form1.cs (clic derecho -> Ver Código). Borra todo y pega el código compl
 4. Archivos Extra (Imágenes)
 Para que funcione la pantalla de carga y el QR:
 
-Ve a la carpeta de tu proyecto: GuarderiaVisual/bin/Debug.
+Ve a la carpeta de tu proyecto:    C:\Users\juand\source\repos\GuarderiaVisual\GuarderiaVisual\bin\Debug (este es mi caso, tu busca el tuyo)
 
 Pega ahí dos imágenes:
 
