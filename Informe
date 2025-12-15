@@ -1,0 +1,93 @@
+INFORME DE PROYECTO FINAL: SISTEMA DE GESTIÓN "MI PEQUEÑO MUNDO"
+Institución: Universidad Privada de Santa Cruz de la Sierra (UPSA) Materia: Base de Datos / Programación Proyecto: Sistema Integral de Gestión de Guardería
+
+Integrantes del Equipo:
+
+Bralin Canllavi
+
+Sebastian Cruz
+
+Jorge Baglivo
+
+Juan Diego Salazar
+
+1. RESUMEN EJECUTIVO
+El presente proyecto consiste en el desarrollo e implementación de una solución de software integral para la administración de la guardería "Mi Pequeño Mundo". El sistema aborda la problemática de la gestión manual de matrículas, control dietético, servicios médicos, inventario y facturación, centralizando toda la información en una base de datos relacional robusta con una interfaz gráfica moderna.
+
+2. OBJETIVOS
+2.1. Objetivo General
+Desarrollar un sistema de información transaccional que automatice los procesos operativos y administrativos de la guardería, garantizando la integridad de los datos y la seguridad de los infantes.
+
+2.2. Objetivos Específicos
+Gestionar el registro de niños, tutores y personal autorizado.
+
+Implementar un control estricto de dietas y alergias alimentarias.
+
+Administrar servicios adicionales (pediatría, psicología, tienda).
+
+Controlar el inventario de insumos con alertas de reposición.
+
+Centralizar la facturación mensual y generar reportes de nómina.
+
+3. ARQUITECTURA TÉCNICA
+Para el desarrollo del sistema se han utilizado las siguientes tecnologías:
+
+Lenguaje de Programación: C# (Windows Forms .NET Framework).
+
+Gestor de Base de Datos: MySQL 8.0.
+
+Diseño de Interfaz: GDI+ (Motor gráfico personalizado "Neon Pro Ultra").
+
+Conectividad: ADO.NET (MySql.Data).
+
+4. MÓDULOS DEL SISTEMA
+El sistema se divide en 8 módulos funcionales que cubren el 100% de los requerimientos planteados:
+
+Gestión de Estudiantes: Registro completo (ABMC) con historial médico y bloqueo de seguridad por alergias.
+
+Módulo de Tutores: Gestión de apoderados y personas autorizadas para la recogida, con integridad referencial en cascada.
+
+Cocina y Menús: Creación de platos desglosados por ingredientes para el cruce de datos con las alergias de los niños.
+
+Comedor Inteligente: Terminal de pedidos que valida automáticamente si el niño puede consumir el plato seleccionado (Safety Lock).
+
+Servicios Extra: Registro de atenciones especializadas (Pediatría, Fonoaudiología) y servicios generales (Lavandería, Niñera).
+
+Tienda e Inventario: Control de stock de artículos. Incluye alertas visuales (Rojo) y reporte de reposición automatizado.
+
+Caja Centralizada: Módulo de cobranza unificado que suma mensualidades + consumos + servicios extras en una sola transacción.
+
+Nómina: Generación de reportes de ingresos por especialista basados en la productividad mensual.
+
+5. IMPLEMENTACIÓN DE BASE DE DATOS AVANZADA
+Cumpliendo con los requisitos de ingeniería de datos, el sistema implementa:
+
+Integridad Referencial: Uso de FOREIGN KEYS con ON DELETE CASCADE para mantener la consistencia de los datos.
+
+Procedimientos Almacenados (Stored Procedures):
+
+SP_REGISTRAR_PAGO: Encapsula la lógica compleja del cobro, insertando el historial y actualizando múltiples tablas de deuda simultáneamente.
+
+Transacciones (ACID): Implementadas tanto en SQL como en C# para asegurar que los pagos sean atómicos (o se guarda todo, o no se guarda nada).
+
+Vistas (Views):
+
+V_REPORTE_NOMINA: Abstracción de consultas complejas (JOINs múltiples) para el cálculo de pagos a profesionales.
+
+Cursores:
+
+SP_GENERAR_PEDIDO_REPOSICION: Algoritmo que recorre fila por fila el inventario para calcular faltantes y generar órdenes de compra.
+
+6. INNOVACIÓN EN INTERFAZ DE USUARIO (UX/UI)
+A diferencia de los sistemas tradicionales, se desarrolló un motor gráfico propio (Tema Neon Pro) que incluye:
+
+Controles personalizados con bordes redondeados y suavizado (Anti-aliasing).
+
+Animaciones de transición (FadeIn, SlideDown) y efectos de interacción (Hover Glow).
+
+Pantalla de carga (Splash Screen) con partículas dinámicas.
+
+Modo oscuro optimizado para reducir la fatiga visual del operador.
+
+7. CONCLUSIÓN
+El sistema "Mi Pequeño Mundo" ha sido finalizado exitosamente, cumpliendo con la totalidad de los requerimientos funcionales y técnicos exigidos por la cátedra. La aplicación no solo resuelve la problemática administrativa, sino que introduce capas de seguridad vitales (control de alergias) y herramientas de inteligencia de negocios (reportes y cursores), entregando un producto de calidad profesional.
